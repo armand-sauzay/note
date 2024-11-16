@@ -1,0 +1,40 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - binary: note
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -X main.version={{.Env.VERSION}}
+
+git:
+  tag_sort: "-version:refname"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - name: note
+    repository:
+      owner: armand-sauzay
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/armand-sauzay/note"
+    description: "A modern TUI for note application"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    test: |
+      system "#{bin}/note --version"
