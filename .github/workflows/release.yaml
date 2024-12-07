@@ -12,12 +12,14 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    name: Lint
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/pre-commit
 
   test:
     runs-on: ubuntu-latest
+    name: Test
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -29,6 +31,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
+    name: Release
     outputs:
       new_release_version: ${{ steps.semantic.outputs.new_release_version }}
       new_release_published: ${{ steps.semantic.outputs.new_release_published }}
