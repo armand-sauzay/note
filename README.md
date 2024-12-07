@@ -23,7 +23,7 @@ A modern terminal-based note-taking application built with [Bubble Tea](https://
 ### Using Homebrew (macOS & Linux)
 
 ```bash
-brew tap armandsauzay/note
+brew tap armandsauzay/homebrew-tap
 brew install note
 ```
 
@@ -38,7 +38,7 @@ go install github.com/armandsauzay/note@latest
 ```
 git clone https://github.com/armandsauzay/note.git
 cd note
-go install
+go install .
 ```
 
 ## 🚀 Usage
