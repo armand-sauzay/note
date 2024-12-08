@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -93,23 +94,37 @@ func DefaultConfig() *Config {
 func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
 
+	// Create notes directory if it doesn't exist
+	if err := os.MkdirAll(cfg.NotesDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create notes directory: %v", err)
+	}
+
+	// Create archive directory if it doesn't exist
+	if err := os.MkdirAll(cfg.ArchiveDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create archive directory: %v", err)
+	}
+
 	configDir, err := getConfigDir()
 	if err != nil {
 		return nil, err
 	}
 
-	configPath := filepath.Join(configDir, "config.yaml")
-
-	// Check if config directory exists, create if not
+	// Create config directory if it doesn't exist
 	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create config directory: %v", err)
 	}
+
+	configPath := filepath.Join(configDir, "config.yaml")
 
 	// Check if config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		// Create default config
-		if err := SaveConfig(cfg); err != nil {
-			return nil, err
+		// Create default config file
+		data, err := yaml.Marshal(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal default config: %v", err)
+		}
+		if err := os.WriteFile(configPath, data, 0644); err != nil {
+			return nil, fmt.Errorf("failed to write default config: %v", err)
 		}
 		return cfg, nil
 	}
