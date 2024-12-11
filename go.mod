@@ -1,4 +1,4 @@
-module note
+module github.com/armand-sauzay/note
 
 go 1.21
 

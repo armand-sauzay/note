@@ -30,13 +30,13 @@ brew install note
 ### Using Go
 
 ```
-go install github.com/armandsauzay/note@latest
+go install github.com/armand-sauzay/note@latest
 ```
 
 ### From Source
 
 ```
-git clone https://github.com/armandsauzay/note.git
+git clone https://github.com/armand-sauzay/note.git
 cd note
 go install .
 ```
