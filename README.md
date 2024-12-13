@@ -1,4 +1,4 @@
-# Note ✍️
+<h1 align="center">Note ✍️</h1>
 
 <p align="center">
   <img src="docs/demo.gif" alt="Note Demo" style="width: 100%;">
