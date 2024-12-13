@@ -46,18 +46,29 @@ type Dimensions struct {
 }
 
 func getConfigDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
+	return filepath.Join(getConfigHome(), "note"), nil
+}
+
+func getConfigHome() string {
+	if xdgConfig := os.Getenv("XDG_CONFIG_HOME"); xdgConfig != "" && filepath.IsAbs(xdgConfig) {
+		return xdgConfig
 	}
-	return filepath.Join(homeDir, ".config", "note"), nil
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".config")
+}
+
+func getDataHome() string {
+	if xdgData := os.Getenv("XDG_DATA_HOME"); xdgData != "" && filepath.IsAbs(xdgData) {
+		return xdgData
+	}
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".local", "share")
 }
 
 func DefaultConfig() *Config {
-	homeDir, _ := os.UserHomeDir()
 	return &Config{
-		NotesDir:      filepath.Join(homeDir, ".note"),
-		ArchiveDir:    filepath.Join(homeDir, ".note", "archive"),
+		NotesDir:      filepath.Join(getDataHome(), "note"),
+		ArchiveDir:    filepath.Join(getDataHome(), "note", "archive"),
 		DefaultEditor: "vim",
 		Layout: Layout{
 			SidebarWidth: 30,
