@@ -531,11 +531,20 @@ func (m *Model) renderMarkdown(content string) string {
 func main() {
 	// Add version flag handling
 	versionFlag := flag.Bool("version", false, "Print version information")
+	infoFlag := flag.Bool("info", false, "Print note dir path")
 	flag.Parse()
 
 	// Check if version flag was provided
 	if *versionFlag {
 		printVersion()
+		os.Exit(0)
+	}
+
+	if *infoFlag {
+		err := printNotesDirPath()
+		if err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(0)
 	}
 
