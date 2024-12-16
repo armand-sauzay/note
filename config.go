@@ -24,9 +24,10 @@ type Layout struct {
 }
 
 type Config struct {
+	ConfigDir     string `yaml:"config_dir"`
 	NotesDir      string `yaml:"notes_dir"`
 	ArchiveDir    string `yaml:"archive_dir"`
-	DefaultEditor string `yaml:"default_editor"`
+	Editor        string `yaml:"editor"`
 	Layout        Layout `yaml:"layout"`
 	Theme         struct {
 		Light string `yaml:"light"`
@@ -66,10 +67,12 @@ func getDataHome() string {
 }
 
 func DefaultConfig() *Config {
+	configDir, _ := getConfigDir()
 	return &Config{
+		ConfigDir:     configDir,
 		NotesDir:      filepath.Join(getDataHome(), "note"),
 		ArchiveDir:    filepath.Join(getDataHome(), "note", "archive"),
-		DefaultEditor: "vim",
+		Editor:        "",
 		Layout: Layout{
 			SidebarWidth: 30,
 			Padding: struct {
@@ -104,31 +107,28 @@ func DefaultConfig() *Config {
 
 func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
+	configDir := cfg.ConfigDir
 
-	// Create notes directory if it doesn't exist
-	if err := os.MkdirAll(cfg.NotesDir, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create notes directory: %v", err)
+	// Create directories if they don't exist
+	dirs := []string{
+		configDir,
+		cfg.NotesDir,
+		cfg.ArchiveDir,
 	}
 
-	// Create archive directory if it doesn't exist
-	if err := os.MkdirAll(cfg.ArchiveDir, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create archive directory: %v", err)
-	}
-
-	configDir, err := getConfigDir()
-	if err != nil {
-		return nil, err
-	}
-
-	// Create config directory if it doesn't exist
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create config directory: %v", err)
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return nil, fmt.Errorf("failed to create directory %s: %v", dir, err)
+		}
 	}
 
 	configPath := filepath.Join(configDir, "config.yaml")
 
 	// Check if config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		// Set the editor before creating the config file
+		cfg.Editor = cfg.GetEditor()
+
 		// Create default config file
 		data, err := yaml.Marshal(cfg)
 		if err != nil {
@@ -159,7 +159,7 @@ func SaveConfig(cfg *Config) error {
 		return err
 	}
 
-	configPath := filepath.Join(cfg.NotesDir, "config.yaml")
+	configPath := filepath.Join(cfg.ConfigDir, "config.yaml")
 	return os.WriteFile(configPath, data, 0644)
 }
 
@@ -210,4 +210,34 @@ func (c *Config) DefaultDimensions() Dimensions {
 			HeaderGap: c.Layout.HeaderGap,
 		},
 	}
+}
+
+func (c *Config) GetEditor() string {
+	// 1. Check config file setting
+	if c.Editor != "" {
+		return c.Editor
+	}
+
+	// 2. Check NOTE_EDITOR environment variable
+	if noteEditor := os.Getenv("NOTE_EDITOR"); noteEditor != "" {
+		return noteEditor
+	}
+
+	// 3. Check VISUAL environment variable
+	if visual := os.Getenv("VISUAL"); visual != "" {
+		return visual
+	}
+
+	// 4. Check EDITOR environment variable
+	if editor := os.Getenv("EDITOR"); editor != "" {
+		return editor
+	}
+
+	// 5. Check if /usr/bin/vi exists
+	if _, err := os.Stat("/usr/bin/vi"); err == nil {
+		return "/usr/bin/vi"
+	}
+
+	// 6. Final fallback to ed
+	return "/bin/ed"
 }

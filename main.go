@@ -142,7 +142,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, textinput.Blink
 				} else {
 					// Only open editor for files
-					cmd := exec.Command(m.config.DefaultEditor, current.path)
+					cmd := exec.Command(m.config.GetEditor(), current.path)
 					cmd.Stdin = os.Stdin
 					cmd.Stdout = os.Stdout
 					cmd.Stderr = os.Stderr
@@ -529,13 +529,20 @@ func (m *Model) renderMarkdown(content string) string {
 }
 
 func main() {
-	// Add version flag handling
+	// Add config flag alongside version flag
 	versionFlag := flag.Bool("version", false, "Print version information")
+	configFlag := flag.Bool("config", false, "Print configuration file location and contents")
 	flag.Parse()
 
 	// Check if version flag was provided
 	if *versionFlag {
 		printVersion()
+		os.Exit(0)
+	}
+
+	// Check if config flag was provided
+	if *configFlag {
+		printConfig()
 		os.Exit(0)
 	}
 
@@ -554,4 +561,18 @@ func main() {
 		fmt.Printf("Error: %v", err)
 		os.Exit(1)
 	}
+}
+
+func printConfig() {
+	configDir, err := getConfigDir()
+
+	configPath := filepath.Join(configDir, "config.yaml")
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		fmt.Printf("Error reading config file: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println(string(data))
 }
